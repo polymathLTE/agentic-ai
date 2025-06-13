@@ -1,0 +1,13 @@
+langchain
+langchain-core
+langchain-chroma
+langchain-huggingface
+langchain-google-genai
+requests
+feedparser
+pydantic
+chromadb
+dotenv
+sentence-transformers
+beautifulsoup4
+lxml
