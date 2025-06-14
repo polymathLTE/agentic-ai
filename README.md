@@ -76,20 +76,22 @@ Follow these steps to get the agent up and running on your local machine.
 
 First, clone the repository to your local machine:
 ```bash
-git clone <your-repo-url>
-cd <your-repo-directory>
+git clone https://github.com/polymathLTE/agentic-ai 
+cd agentic-ai
 ```
 
 Next, create a `requirements.txt` file with the following content:
 ```txt
 langchain
 langchain-core
-langchain-community
+langchain-chroma
+langchain-huggingface
 langchain-google-genai
 requests
 feedparser
 pydantic
 chromadb
+dotenv
 sentence-transformers
 beautifulsoup4
 lxml
