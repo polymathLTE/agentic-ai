@@ -16,9 +16,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ------------------------------------------------------------------#
 # 1.  Initialise services
-# ------------------------------------------------------------------#
 # Use a fast, free, and effective local model for creating embeddings.
 EMBED = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
@@ -29,18 +27,15 @@ VDB = Chroma(
     embedding_function=EMBED
 )
 
-# Initialize the Google Gemini Pro model for agentic reasoning.
-# It's powerful, has a large context window, and excels at tool use.
+# Initialize the Google Gemini flash lite model for agentic reasoning.
+# It's powerful, lightweight and supports tool use.
 LLM_GEMINI = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash-lite",
     temperature=0,
-    #api_version="v1"
-    #convert_system_message_to_human=True # Recommended for Gemini
+    #convert_system_message_to_human=True # this is being deprecated
 )
 
-# ------------------------------------------------------------------#
 # 2.  Helper to push docs into Chroma with standardized metadata
-# ------------------------------------------------------------------#
 def _upsert(text: str, url: str, date: str, src: str) -> None:
     """Creates a LangChain Document and upserts it into the Chroma vector store."""
     # Ensure date is in YYYY-MM-DD format, taking first 10 chars.
@@ -51,9 +46,7 @@ def _upsert(text: str, url: str, date: str, src: str) -> None:
     )
     VDB.add_documents([doc])
 
-# ------------------------------------------------------------------#
 # 3.  NEWSAPI – Structured Tool for mainstream news
-# ------------------------------------------------------------------#
 class NewsQuery(BaseModel):
     query: str = Field(..., description="News search terms, e.g., 'interest rate hikes'")
     from_date: str = Field(..., description="Earliest date to search from in YYYY-MM-DD format.")
@@ -89,9 +82,7 @@ NEWS_TOOL = StructuredTool.from_function(
     args_schema=NewsQuery,
 )
 
-# ------------------------------------------------------------------#
 # 4.  GDELT – Structured Tool for global news
-# ------------------------------------------------------------------#
 class GdeltQuery(BaseModel):
     query: str = Field(..., description="Search string, e.g., 'global supply chain disruptions'")
 
@@ -116,9 +107,7 @@ GDELT_TOOL = StructuredTool.from_function(
     args_schema=GdeltQuery,
 )
 
-# ------------------------------------------------------------------#
 # 5.  RSS – Structured Tool for specialist sources
-# ------------------------------------------------------------------#
 class RssQuery(BaseModel):
     feed_url: str = Field(..., description="A valid public RSS or Atom feed URL.")
 
@@ -150,9 +139,7 @@ RSS_TOOL = StructuredTool.from_function(
     args_schema=RssQuery,
 )
 
-# ------------------------------------------------------------------#
 # 6.  Vector search retriever – Final Answer Tool
-# ------------------------------------------------------------------#
 class VectorQuery(BaseModel):
     query: str = Field(..., description="The user's original question or a query to search the vector store with.")
 
@@ -181,9 +168,7 @@ VEC_TOOL = StructuredTool.from_function(
 # Define the list of tools available to the agent.
 TOOLS: list[Tool] = [NEWS_TOOL, GDELT_TOOL, RSS_TOOL, VEC_TOOL]
 
-# ------------------------------------------------------------------#
 # 7.  Create the Tool-Calling Agent and Executor
-# ------------------------------------------------------------------#
 def make_tool_agent(llm) -> AgentExecutor:
     """Creates a modern, tool-calling agent using a structured prompt."""
     # This prompt template is key to guiding the LLM's reasoning process.
@@ -217,9 +202,7 @@ def make_tool_agent(llm) -> AgentExecutor:
         handle_parsing_errors=True # Gracefully handles LLM output errors
     )
 
-# ------------------------------------------------------------------#
 # 8.  Public entry-point and interactive loop
-# ------------------------------------------------------------------#
 if __name__ == "__main__":
     # Ensure necessary API keys are set
     if not os.getenv("GOOGLE_API_KEY") or not os.getenv("NEWSAPI_KEY"):
