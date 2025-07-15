@@ -93,8 +93,8 @@ Follow these steps to set up and run the project locally.
 
 1.  **Clone the Repository**
     ```bash
-    git clone <your-repository-url>
-    cd synapse-agent
+    git clone https://github.com/polymathLTE/agentic-ai.git
+    cd agentic-ai/synapse-agent
     ```
 
 2.  **Create and Activate a Virtual Environment**
@@ -106,7 +106,7 @@ Follow these steps to set up and run the project locally.
 
 3.  **Install Dependencies**
     ```bash
-    pip install -r requirements.txt
+    pip install -r ../requirements.txt
     ```
 
 4.  **Configure Environment Variables**
