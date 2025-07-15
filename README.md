@@ -1,7 +1,3 @@
-Of course. Here is a professional and comprehensive `README.md` file for the Synapse project. It is structured for clarity and avoids any informalities or emojis.
-
----
-
 # Synapse: A Multi-Agent System for Financial Research
 
 Synapse is a collaborative AI system designed to automate complex financial and policy research. It employs a team of specialized AI agents, orchestrated by the LangGraph framework, to handle multi-step queries that are beyond the scope of traditional Retrieval-Augmented Generation (RAG) systems. By decomposing a user's request, gathering information from diverse real-time sources, and synthesizing a comprehensive report, Synapse delivers more reliable, detailed, and factually grounded analysis.
