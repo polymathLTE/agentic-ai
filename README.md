@@ -1,174 +1,153 @@
-# Gemini-Powered RAG Agent for Financial & Policy News
-
-[![Python Version](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-This project provides a production-ready, extensible **Retrieval-Augmented Generation (RAG)** agent designed for question-answering on topics related to finance, economics, and policy.
-
-The agent leverages the powerful reasoning and tool-calling capabilities of **Google's Gemini Pro** model. It dynamically fetches real-time information from multiple news sources, ingests it into a local vector database, and then synthesizes an informed answer based on the retrieved context. The entire data pipeline is designed to run on free-tier services.
+Of course. Here is a professional and comprehensive `README.md` file for the Synapse project. It is structured for clarity and avoids any informalities or emojis.
 
 ---
 
-## ✨ Key Features
+# Synapse: A Multi-Agent System for Financial Research
 
-*   **🧠 Intelligent Agent:** Uses Google's `gemini-1.5-pro-latest` for sophisticated reasoning, planning, and tool execution.
-*   **🔌 Multi-Source Data Ingestion:**
-    *   **NewsAPI:** For mainstream English-language news from over 150,000 sources.
-    *   **GDELT:** For global news coverage in over 100 languages, updated every 15 minutes.
-    *   **RSS/Atom Feeds:** For specialist sources like central bank blogs, research institutions (IMF, ECB), or financial news sites.
-*   **🚀 Local & Free RAG Pipeline:**
-    *   **Embeddings:** `all-MiniLM-L6-v2` (fast, effective, and runs locally).
-    *   **Vector Store:** `ChromaDB` for persistent, local storage of ingested articles.
-*   **🛠️ Modern & Robust Tooling:** Built with LangChain's latest `create_tool_calling_agent` for reliable interaction between the LLM and its tools.
-*   **⚙️ Extensible by Design:** Easily add new data sources, tools, or swap out the LLM with minimal code changes.
+Synapse is a collaborative AI system designed to automate complex financial and policy research. It employs a team of specialized AI agents, orchestrated by the LangGraph framework, to handle multi-step queries that are beyond the scope of traditional Retrieval-Augmented Generation (RAG) systems. By decomposing a user's request, gathering information from diverse real-time sources, and synthesizing a comprehensive report, Synapse delivers more reliable, detailed, and factually grounded analysis.
 
----
+## Table of Contents
 
-## 🏗️ Architecture: How It Works
+- [The Problem](#the-problem)
+- [System Architecture](#system-architecture)
+  - [The Agent Team](#the-agent-team)
+- [Key Features](#key-features)
+- [Technical Stack](#technical-stack)
+- [Project Structure](#project-structure)
+- [Setup and Installation](#setup-and-installation)
+- [Running the Application](#running-the-application)
+- [Example Usage](#example-usage)
+- [Future Work](#future-work)
+- [License](#license)
 
-The agent follows a two-step RAG process to answer questions:
+## The Problem
 
-1.  **Fetch & Ingest:** The user's query is first analyzed by the Gemini agent. It determines which tool (`NewsAPI`, `GDELT`, `RSS`) is best suited to find relevant articles. It calls the chosen tool, which fetches the data and "upserts" it into the local Chroma vector store.
+Standard Retrieval-Augmented Generation (RAG) systems are effective for direct question-answering but often fail when faced with complex queries that require planning, decomposition, and analysis. A query like, "How has a company's recent earnings call affected its stock price and news coverage?" involves multiple distinct cognitive steps. A single-agent system struggles to manage this process, often resulting in generic or incomplete answers.
 
-2.  **Retrieve & Synthesize:** After loading the data, the agent uses the `vector_database_search` tool. This tool queries ChromaDB to find the most relevant document snippets based on the user's original question. These snippets are then passed back to the Gemini model, which synthesizes them into a final, coherent answer, complete with sources.
+Synapse solves this by modeling a human research workflow. It dedicates specialized agents to each phase of the process—planning, data gathering, and analysis—to ensure that every part of a complex query is handled thoroughly and methodically.
 
-```mermaid
-graph TD
-    A[User Query] --> B{Gemini Agent};
-    B -->|1. Chooses Tool| C[NewsAPI Tool];
-    B -->|1. Chooses Tool| D[GDELT Tool];
-    B -->|1. Chooses Tool| E[RSS Tool];
-    C -->|2. Ingests Data| F[(ChromaDB Vector Store)];
-    D -->|2. Ingests Data| F;
-    E -->|2. Ingests Data| F;
-    B -->|3. Uses Search Tool| G[Vector Search Tool];
-    G -->|4. Retrieves Context| F;
-    F -->|5. Sends Context Back| B;
-    B -->|6. Synthesizes Answer| H[Final Answer];
+## System Architecture
+
+Synapse is built as a stateful graph using the LangGraph library. Each node in the graph represents a specialized agent, and a shared `AgentState` object is passed between them, allowing agents to build upon each other's work.
+
+The workflow is sequential and deterministic:
+
+```
+[User Query] -> [1. Research Manager] -> [2. Search Specialist] -> [3. Financial Analyst] -> [Final Report]
 ```
 
----
+### The Agent Team
 
-## 🛠️ Technology Stack
+1.  **Research Manager**: This agent acts as the team lead. It receives the user's query and creates a structured, machine-readable `research_plan`. This plan includes a list of concise search queries and any identified stock tickers, providing clear instructions for the next agent.
 
-*   **LLM:** Google Gemini Pro (`gemini-1.5-pro-latest`)
-*   **Framework:** LangChain
-*   **Data Sources:** NewsAPI, GDELT, RSS Feeds
-*   **Vector Store:** ChromaDB
-*   **Embeddings:** Hugging Face `sentence-transformers`
-*   **Core Libraries:** `requests`, `pydantic`, `feedparser`
+2.  **Search Specialist**: This agent is the data gatherer. It executes the `research_plan` by systematically using its tools (e.g., Tavily web search) to find relevant articles and information, which it then ingests into a central ChromaDB vector store.
 
----
+3.  **Financial Analyst**: This agent is the final report writer. In a critical design choice for reliability, this agent programmatically calls its tools first to retrieve all necessary context from the vector database and stock market APIs. Only after all information has been gathered is the complete context passed to the LLM for the final synthesis step, ensuring a factually grounded report.
 
-## 🚀 Getting Started
+## Key Features
 
-Follow these steps to get the agent up and running on your local machine.
+- **Multi-Agent Collaboration**: Utilizes a team of three distinct agents with specialized roles and tools.
+- **Stateful Orchestration**: Employs LangGraph to manage a predictable, graph-based workflow where state is explicitly passed between agents.
+- **Extensive Tool Integration**: Integrates multiple external tools for enhanced capabilities, including:
+  - Real-time web search (Tavily)
+  - Live stock market data (yfinance)
+  - A persistent vector database for shared memory (ChromaDB)
+- **Modular and Extensible**: The project's organization into distinct `agents` and `tools` directories makes it straightforward to add new capabilities or agents to the team.
+- **Reliable by Design**: The workflow enforces a deterministic process, particularly in the final analysis stage, to prevent common LLM failure modes like "laziness" or hallucination.
 
-### 1. Prerequisites
+## Technical Stack
 
-*   Python 3.9 or higher.
-*   Git for cloning the repository.
-*   API Keys for:
-    *   **Google AI Studio:** [Get your key here](https://aistudio.google.com/app/apikey)
-    *   **NewsAPI:** [Get your free developer key here](https://newsapi.org/)
+- **Orchestration**: LangGraph
+- **LLM Framework**: LangChain
+- **LLM Provider**: Google Gemini (e.g., `gemini-1.5-flash`)
+- **Vector Database**: ChromaDB
+- **Embedding Model**: HuggingFace Sentence Transformers (`all-MiniLM-L6-v2`)
+- **Core Tools**: Tavily API, yfinance
+- **Language**: Python 3.10+
 
-### 2. Installation
+## Project Structure
 
-First, clone the repository to your local machine:
+```
+synapse-agent/
+├── .env
+├── requirements.txt
+├── config.py
+├── graph.py
+├── main.py
+├── agents/
+│   ├── __init__.py
+│   ├── research_manager.py
+│   ├── search_specialist.py
+│   └── financial_analyst.py
+└── tools/
+    ├── __init__.py
+    ├── common.py
+    ├── stock_tool.py
+    ├── tavily.py
+    └── vector_search.py
+```
+
+## Setup and Installation
+
+Follow these steps to set up and run the project locally.
+
+1.  **Clone the Repository**
+    ```bash
+    git clone <your-repository-url>
+    cd synapse-agent
+    ```
+
+2.  **Create and Activate a Virtual Environment**
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    # On Windows, use: venv\Scripts\activate
+    ```
+
+3.  **Install Dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Configure Environment Variables**
+    Create a `.env` file in the project root by copying the example template.
+    ```bash
+    cp .env.example .env
+    ```
+    Open the `.env` file with a text editor and add your API keys:
+    ```
+    GOOGLE_API_KEY="YOUR_GOOGLE_API_KEY_HERE"
+    TAVILY_API_KEY="YOUR_TAVILY_API_KEY_HERE"
+    ```
+
+## Running the Application
+
+To start the multi-agent system, run the `main.py` script from the project's root directory:
+
 ```bash
-git clone <your-repo-url>
-cd <your-repo-directory>
+python3 main.py
 ```
 
-Next, create a `requirements.txt` file with the following content:
-```txt
-langchain
-langchain-core
-langchain-community
-langchain-google-genai
-requests
-feedparser
-pydantic
-chromadb
-sentence-transformers
-beautifulsoup4
-lxml
-```
+The application will initialize and present you with an interactive command prompt where you can enter your queries.
 
-Now, create a virtual environment and install the dependencies:
-```bash
-# Create a virtual environment
-python -m venv venv
-
-# Activate it
-# On macOS/Linux:
-source venv/bin/activate
-# On Windows:
-.\venv\Scripts\activate
-
-# Install the required packages
-pip install -r requirements.txt
-```
-
-### 3. Configuration
-
-The agent requires API keys to be set as environment variables.
-
-**On macOS/Linux:**
-```bash
-export GOOGLE_API_KEY="YOUR_GOOGLE_AI_KEY_HERE"
-export NEWSAPI_KEY="YOUR_NEWSAPI_KEY_HERE"
-```
-
-**On Windows (Command Prompt):**
-```bash
-set GOOGLE_API_KEY="YOUR_GOOGLE_AI_KEY_HERE"
-set NEWSAPI_KEY="YOUR_NEWSAPI_KEY_HERE"
-```
-> **Note:** For a more permanent solution, consider using a `.env` file with the `python-dotenv` library or setting the variables in your system's environment settings.
-
----
-
-## 💻 Usage
-
-Run the main script from your terminal:
-```bash
-python gemini_rag_agent.py
-```
-
-You will see a confirmation message, and you can start asking questions.
+## Example Usage
 
 ```
-Initializing Gemini-powered RAG agent...
-Agent ready. Ask a news, policy, or finance question.
-Type 'exit' or 'quit' to end the session.
+Initializing Multi-Agent Financial Team...
+Agent Team Ready. Ask a financial or policy question.
+Type 'exit' or 'quit' to end.
 
-➜  What is the latest news regarding the European Central Bank's interest rate policy?
+➜ How has NVIDIA's (NVDA) latest earnings call affected its stock price and recent news coverage?
 ```
 
-### Example Questions
+The system will then execute the multi-agent workflow, providing status updates from each agent, and conclude by printing a comprehensive, synthesized final report.
 
-*   **Mainstream News (NewsAPI):** `What are recent developments in the US housing market?`
-*   **Global News (GDELT):** `Find articles about supply chain issues in Southeast Asia.`
-*   **Specialist Source (RSS):** `Pull the latest posts from the Bank for International Settlements RSS feed at https://www.bis.org/rss/pressrels.xml`
-*   **Follow-up (RAG):** After loading data, ask: `Based on the documents, what is the current sentiment on global financial stability?`
+## Future Work
 
----
+- **Human-in-the-Loop**: Introduce a validation step for a human to approve or modify the `research_plan` before execution.
+- **Agent Expansion**: Add new specialized agents, such as a Data Visualization Agent for generating charts or a Policy Analyst for interpreting regulatory documents.
+- **Formal Evaluation**: Implement a benchmarking suite to formally evaluate the system's performance against other models on a standardized set of complex queries.
 
-## 🔧 Customization & Extension
-
-This agent is designed to be easily modified.
-
-*   **Change the LLM:** To use a different model (e.g., the faster `gemini-1.5-flash`), simply change the model name in the `LLM_GEMINI` initializer.
-*   **Add a New Tool:** To add a new data source (e.g., the FRED API for economic data), you would:
-    1.  Create a Pydantic model for the tool's arguments.
-    2.  Write the Python function that calls the API.
-    3.  Wrap it in a `StructuredTool`.
-    4.  Add the new tool to the `TOOLS` list.
-*   **Adjust Retrieval:** You can modify the `_vector_search` function to change the number of retrieved documents (`k=8`) or the time filter (`days=30`).
-
----
-
-## 📜 License
+## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
