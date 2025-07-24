@@ -16,6 +16,7 @@ def create_research_manager(state):
     prompt = ChatPromptTemplate.from_messages([
         ("system",
          "You are the Research Manager. Your role is to analyze a user's query and create a structured research plan. "
+         "Structure the research plan and assign the tool/tools that best match the specific task"
          "Based on the query: '{original_query}', generate a list of search queries for the web search specialist and identify any stock tickers. "
          "Output ONLY the structured plan."),
         ("user", "{original_query}")
@@ -27,5 +28,5 @@ def create_research_manager(state):
     
     plan = chain.invoke(state)
     
-    state['research_plan'] = plan.dict() # Store the plan as a dictionary
+    state['research_plan'] = plan.model_dump() # Store the plan as a dictionary
     return state
